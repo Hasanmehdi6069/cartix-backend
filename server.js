@@ -36,16 +36,30 @@ passport.deserializeUser((user, done) => done(null, user));
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "http://localhost:5000/api/auth/google/callback" 
+    // 🔴 CHANGED TO YOUR LIVE RENDER BACKEND
+    callbackURL: "https://cartix-api.onrender.com/api/auth/google/callback" 
   },
-  async (accessToken, refreshToken, profile, done) => {
-      try {
-          // For MVP, we pass the Google profile forward
-          return done(null, profile);
-      } catch (error) {
-          return done(error, null);
-      }
-  }
+    async (accessToken, refreshToken, profile, done) => {
+        try {
+            // Check if user already exists in DB
+            let user = await User.findOne({ email: profile.emails[0].value });
+            if (!user) {
+                // If not, create a new user (No password needed for Google users!)
+                user = new User({
+                    fullName: profile.displayName,
+                    email: profile.emails[0].value,
+                    password: null
+                });
+                await user.save();
+                console.log("✅ NEW GOOGLE USER CREATED:", profile.emails[0].value);
+            } else {
+                console.log("🔓 GOOGLE USER LOGGED IN:", profile.emails[0].value);
+            }
+            return done(null, user);
+        } catch (error) {
+            return done(error, null);
+        }
+    }
 ));
 
 // =========================================================
@@ -131,12 +145,12 @@ app.get('/auth/google',
 
 // 2. Catch the user when Google sends them back!
 app.get('/api/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: 'http://127.0.0.1:5500/login.html' }), 
+  // 🔴 CHANGED TO YOUR LIVE NETLIFY LOGIN PAGE
+  passport.authenticate('google', { failureRedirect: 'https://leafy-duckanoo-6ff9f9.netlify.app/Login.html' }), 
   (req, res) => {
-    // 🟢 SUCCESS! Google verified them. 
-    // Redirect back to your frontend homepage, passing their name safely in the URL
     const userName = encodeURIComponent(req.user.displayName);
-    res.redirect(`http://127.0.0.1:5500/Index.html?login=success&name=${userName}`);
+    // 🔴 CHANGED TO YOUR LIVE NETLIFY HOMEPAGE
+    res.redirect(`https://leafy-duckanoo-6ff9f9.netlify.app/Index.html?login=success&name=${userName}`);
   }
 );
 
