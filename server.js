@@ -145,12 +145,14 @@ app.get('/auth/google',
 
 // 2. Catch the user when Google sends them back!
 app.get('/api/auth/google/callback',
-  // 🔴 CHANGED TO YOUR LIVE NETLIFY LOGIN PAGE
-  passport.authenticate('google', { failureRedirect: 'https://leafy-duckanoo-6ff9f9.netlify.app/Login.html' }), 
+  // 🔴 CHANGE 1: Update the failure redirect to your NEW domain
+  passport.authenticate('google', { failureRedirect: 'https://cartixthewhole.netlify.app/Login.html' }), 
   (req, res) => {
-    const userName = encodeURIComponent(req.user.displayName);
-    // 🔴 CHANGED TO YOUR LIVE NETLIFY HOMEPAGE
-    res.redirect(`https://leafy-duckanoo-6ff9f9.netlify.app/Index.html?login=success&name=${userName}`);
+    // 🔴 CHANGE 2: Added a fallback in case Google doesn't send a display name
+    const userName = encodeURIComponent(req.user.displayName || 'VIP User');
+    
+    // 🔴 CHANGE 3: Redirect to your NEW domain
+    res.redirect(`https://cartixthewhole.netlify.app/Index.html?login=success&name=${userName}`);
   }
 );
 
