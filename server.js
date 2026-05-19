@@ -123,6 +123,20 @@ app.post('/api/admin/products', async (req, res) => {
     }
 });
 
+// =======================================================
+// 🛍️ PUBLIC API: GET ALL PRODUCTS FOR HOMEPAGE
+// =======================================================
+app.get('/api/products', async (req, res) => {
+    try {
+        // Fetches all products, newest first
+        const products = await Product.find().sort({ createdAt: -1 }); 
+        res.status(200).json(products);
+    } catch (err) {
+        console.error("Failed to fetch products:", err);
+        res.status(500).json({ error: "Database read failure." });
+    }
+});
+
 
 // =========================================================
 // 6. TRADITIONAL AUTH ROUTES (Signup / Login)
