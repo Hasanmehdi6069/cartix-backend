@@ -89,6 +89,41 @@ const orderSchema = new mongoose.Schema({
 });
 const Order = mongoose.model('Order', orderSchema);
 
+
+// =======================================================
+// 📦 PRODUCT DATABASE MODEL
+// =======================================================
+const productSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    price: { type: Number, required: true },
+    image: { type: String, default: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&fit=crop' },
+    category: { type: String, default: 'Uncategorized' },
+    createdAt: { type: Date, default: Date.now }
+});
+const Product = mongoose.model('Product', productSchema);
+
+// =======================================================
+// 🛡️ ADMIN API: SECURE PRODUCT UPLOAD ROUTE
+// =======================================================
+app.post('/api/admin/products', async (req, res) => {
+    const { adminKey, name, price, image, category } = req.body;
+
+    // 🔴 TOP-TIER SECURITY: Hardcoded API Key to stop hackers
+    if (adminKey !== "CARTIX_CEO_2026_SECURE") {
+        return res.status(403).json({ error: "Unauthorized. Server breach blocked." });
+    }
+
+    try {
+        const newProduct = new Product({ name, price, image, category });
+        await newProduct.save();
+        res.status(201).json({ message: "Product injected into global database!", product: newProduct });
+    } catch (err) {
+        console.error("Database Injection Failed:", err);
+        res.status(500).json({ error: "Database failure. Check server logs." });
+    }
+});
+
+
 // =========================================================
 // 6. TRADITIONAL AUTH ROUTES (Signup / Login)
 // =========================================================
